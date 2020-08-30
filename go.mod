@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	gioui.org v0.0.0-20200829162755-829ee4559c5a // indirect
+	github.com/corona10/goimagehash v1.0.2 // indirect
 	github.com/devedge/imagehash v0.0.0-20180324030135-7061aa3b4066
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/zserge/lorca v0.1.9

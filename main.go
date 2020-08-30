@@ -2,47 +2,33 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
-	"os"
-	//	"log"
-	//"github.com/devedge/imagehash"
-
 	"io/ioutil"
+	"log"
 	"net/http"
-	"time"
+	"os"
+
+	"github.com/devedge/imagehash"
 )
 
 var (
-	//dir : INITIAL DIRECTORY
-	dir string
-	//file : files return?
+	dir  string
 	file string
 )
-
-//	TODO:1. Be able to scan in a directory and readin each -> image and output -> array hashes
-//	     2. take though hashes and either store them in memory or store them in a local db/dump_file
-//	     3. File hash for every iterate of the loop
 
 func main() {
 
 	files, err := IOReadDir("C:/Users/Nathan Reed/Desktop")
-
 	if err != nil {
-		println("Did not Preform IOREAD_DIR Function")
+		panic(err)
 	}
-
-	time.Sleep(1 * time.Second)
-	IOReadFile(files)
-	fmt.Scanln("Enter: ")
-}
-
-//HashFiles : Hash Checked Files
-func HashFiles(CkFiled string) {
-
+	HashFiles(files)
+	fmt.Scanln("enter: ")
 }
 
 //IOReadFile : Take in files from IOREADDir function and read the bytes to check contentType
-func IOReadFile(files []string) []string {
+func HashFiles(files []string) {
 
 	var fileArr []string
 	var readFile string
@@ -53,34 +39,37 @@ func IOReadFile(files []string) []string {
 		buff := make([]byte, 512) // docs tell that it take only first 512 bytes into consideration
 
 		f, err := os.Open(readFile)
+
 		if err != nil {
-			fmt.Println("Could not open file")
+			log.Fatal("Could not open file")
 		}
 		f.Read(buff)
 
 		switch {
 
 		case http.DetectContentType(buff) == "image/jpeg":
-			fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
-			fileArr = append(fileArr, readFile)
-
+			src, _ := imagehash.OpenImg(readFile)
+			hash, _ := imagehash.Dhash(src, 8)
+			//fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
+			object := readFile + "/" + hex.EncodeToString(hash)
+			fileArr = append(fileArr, object)
+			f.Close()
 		case http.DetectContentType(buff) == "image/png":
-			fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
-			fileArr = append(fileArr, readFile)
+			src, _ := imagehash.OpenImg(readFile)
+			//fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
+			hash, _ := imagehash.Dhash(src, 8)
+			object := readFile + "/" + hex.EncodeToString(hash)
 
+			fileArr = append(fileArr, object)
+			f.Close()
 		default:
-			fmt.Println("Failed: " + http.DetectContentType(buff))
+			f.Close()
 		}
 	}
-
-	println("outside =>")
-	fmt.Println(fileArr)
-	println("\n")
 
 	for j := 0; j < len(fileArr); j++ {
 		fmt.Println(fileArr[j])
 	}
-	return nil
 }
 
 //IOReadDir : Read in Directory and spit out file names + PATH
@@ -94,7 +83,7 @@ func IOReadDir(root string) ([]string, error) {
 	if err != nil {
 		return files, err
 	}
-	println("Scanning...  " + root + "\\\n")
+	println("Scanning...  " + root + "/\n")
 	for _, file := range fileInfo {
 		c++
 		filePath := root + "\\" + file.Name()

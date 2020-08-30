@@ -2,13 +2,13 @@
 package main
 
 import (
-	"encoding/hex"
+	//"encoding/hex"
 	"fmt"
-	"log"
+	//"log"
 	"os"
 	"path/filepath"
-
-	"github.com/devedge/imagehash"
+	//"github.com/devedge/imagehash"
+	//"io"
 )
 
 var dir string
@@ -19,51 +19,24 @@ var file string
 //	     3. File hash for every iterate of the loop
 
 func main() {
-	GetFiles("../nameshed")
+	FilePathWalkDir("C:\\git\\test_dir")
 }
 
-//GrabPNG function using a image hashing library to print out hash values
-func GrabPNG(file string) error {
-
-	src, err := imagehash.OpenImg(file)
-
-	if err != nil {
-		println(err)
-	}
-
-	//Hash x+y and return the hash
-	hashLen := 8
-	hash, _ := imagehash.Dhash(src, hashLen)
-
-	//print out hash
-	fmt.Printf("Your Hash for %s: ", file)
-	fmt.Println(hex.EncodeToString(hash))
-	return nil
-}
-
-//GetFiles : return string -> file for next function
-func GetFiles(dir string) string {
+func FilePathWalkDir(root string) ([]string, error) {
+	var files []string
 	c := 0
-
-	filepath.Walk(dir, func(dir string, info os.FileInfo, err error) error {
-
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		c++
-		if c == 1 {
-			fmt.Printf("\nDirectory: %s\n", dir)
+		if !info.IsDir() {
+			files = append(files, path)
 		}
-		if err != nil {
-			log.Fatal(err.Error())
+		if c == 1 {
+			fmt.Printf("\nDirectory: %s\n", info.Name())
 		}
 		if c > 1 {
-			fmt.Printf("INSIDE_FUNC => FileName: %s\n", info.Name())
+			fmt.Printf("	FileName: %s\n", info.Name())
 		}
-
-		file = dir + "/" + info.Name()
 		return nil
 	})
-
-	if c < 0 {
-		println("C == 0i")
-	}
-	return file
+	return files, err
 }

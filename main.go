@@ -5,12 +5,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/devedge/imagehash"
-	"github.com/zserge/lorca"
 )
 
 var dir string
@@ -21,21 +19,18 @@ var file string
 //	     3. File hash for every iterate of the loop
 
 func main() {
-	GrabPNG("./")
-	ui, err := lorca.New("data:text/html, <h1> Hello world </h1>", "", 480, 320)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer ui.Close()
-
-	ui.Done()
+	GetFiles("../nameshed")
 }
 
 //GrabPNG function using a image hashing library to print out hash values
 func GrabPNG(file string) error {
 
 	src, err := imagehash.OpenImg(file)
+
+	if err != nil {
+		println(err)
+	}
+
 	//Hash x+y and return the hash
 	hashLen := 8
 	hash, _ := imagehash.Dhash(src, hashLen)
@@ -46,32 +41,31 @@ func GrabPNG(file string) error {
 	return nil
 }
 
-//GetContentType to grab ext of file for review in the next function
-func GetContentType(file string) (string, error) {
-	buffer := make([]byte, 512)
+//GetFiles : return string -> file for next function
+func GetFiles(dir string) string {
+	c := 0
 
-	_, err := file.Read(buffer)
-	if err != nil {
-		return "", err
-	}
-
-	// use content-type by returning "application/octet-stream" if no others seemed to match.
-	contentType := http.DetectContentType(buffer)
-
-	return contentType, nil
-}
-
-func foo(dir string) string {
 	filepath.Walk(dir, func(dir string, info os.FileInfo, err error) error {
+		c++
+		if c == 1 {
+			fmt.Printf("\nDirectory: %s\n", dir)
+		}
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		if info.Name() == "." {
 			fmt.Println("DIR_START")
 		}
-		fmt.Printf("FileName: %s\n: ", info.Name())
+		if c > 1 {
+			fmt.Printf("INSIDE_FUNC => FileName: %s\n", info.Name())
+
+		}
 		file = dir + "/" + info.Name()
 		return nil
 	})
+
+	if c < 0 {
+		println("C == 0i")
+	}
 	return file
 }

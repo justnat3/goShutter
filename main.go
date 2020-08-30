@@ -46,6 +46,7 @@ func GetFiles(dir string) string {
 	c := 0
 
 	filepath.Walk(dir, func(dir string, info os.FileInfo, err error) error {
+
 		c++
 		if c == 1 {
 			fmt.Printf("\nDirectory: %s\n", dir)
@@ -53,13 +54,10 @@ func GetFiles(dir string) string {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		if info.Name() == "." {
-			fmt.Println("DIR_START")
-		}
 		if c > 1 {
 			fmt.Printf("INSIDE_FUNC => FileName: %s\n", info.Name())
-
 		}
+
 		file = dir + "/" + info.Name()
 		return nil
 	})

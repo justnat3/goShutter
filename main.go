@@ -25,7 +25,7 @@ var (
 
 func main() {
 
-	files, err := IOReadDir("C:\\git\\test_dir")
+	files, err := IOReadDir("C:/Users/Nathan Reed/Desktop")
 
 	if err != nil {
 		println("Did not Preform IOREAD_DIR Function")
@@ -33,6 +33,7 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 	IOReadFile(files)
+	fmt.Scanln("Enter: ")
 }
 
 //HashFiles : Hash Checked Files
@@ -41,28 +42,45 @@ func HashFiles(CkFiled string) {
 }
 
 //IOReadFile : Take in files from IOREADDir function and read the bytes to check contentType
-func IOReadFile(files []string) {
-	var read_file string
+func IOReadFile(files []string) []string {
+
+	var fileArr []string
+	var readFile string
+
 	for i := 0; i < len(files); i++ {
 
-		read_file = files[i]
+		readFile = files[i]
 		buff := make([]byte, 512) // docs tell that it take only first 512 bytes into consideration
 
-		f, err := os.Open(read_file)
+		f, err := os.Open(readFile)
 		if err != nil {
 			fmt.Println("Could not open file")
 		}
 		f.Read(buff)
 
-		if http.DetectContentType(buff) != "image/png" {
-			fmt.Println(read_file + ": Failed! || Type: " + http.DetectContentType(buff))
-		}
+		switch {
 
-		if http.DetectContentType(buff) == "image/png" {
-			fmt.Println(read_file + ": Success! || Type: " + http.DetectContentType(buff))
-		}
+		case http.DetectContentType(buff) == "image/jpeg":
+			fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
+			fileArr = append(fileArr, readFile)
 
+		case http.DetectContentType(buff) == "image/png":
+			fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
+			fileArr = append(fileArr, readFile)
+
+		default:
+			fmt.Println("Failed: " + http.DetectContentType(buff))
+		}
 	}
+
+	println("outside =>")
+	fmt.Println(fileArr)
+	println("\n")
+
+	for j := 0; j < len(fileArr); j++ {
+		fmt.Println(fileArr[j])
+	}
+	return nil
 }
 
 //IOReadDir : Read in Directory and spit out file names + PATH
@@ -79,8 +97,8 @@ func IOReadDir(root string) ([]string, error) {
 	println("Scanning...  " + root + "\\\n")
 	for _, file := range fileInfo {
 		c++
-		file_path := root + "\\" + file.Name()
-		files = append(files, file_path)
+		filePath := root + "\\" + file.Name()
+		files = append(files, filePath)
 	}
 	return files, nil
 }

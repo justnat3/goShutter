@@ -2,12 +2,13 @@
 package main
 
 import (
-	//"encoding/hex"
 	"fmt"
-	//"log"
+	"os"
+	//	"log"
 	//"github.com/devedge/imagehash"
 
 	"io/ioutil"
+	"net/http"
 	"time"
 )
 
@@ -24,49 +25,43 @@ var (
 
 func main() {
 
-	window := app.NewWindow()
-	for e := range window.Events() {
-		switch e := e.(type) {
-		case system.DestroyEvent:
-			// The window was closed.
-			return e.Err
-		case system.FrameEvent:
-			// A request to draw the window state.
-			ops := new(op.Ops)
-			// Draw the state into ops.
-			draw(ops)
-			// Update the display.
-			e.Frame(ops)
-		}
-	}
-
 	files, err := IOReadDir("C:\\git\\test_dir")
 
 	if err != nil {
 		println("Did not Preform IOREAD_DIR Function")
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	IOReadFile(files)
+}
+
+//HashFiles : Hash Checked Files
+func HashFiles(CkFiled string) {
+
 }
 
 //IOReadFile : Take in files from IOREADDir function and read the bytes to check contentType
 func IOReadFile(files []string) {
 	var read_file string
-	n := 512
-
-	buf := make([]byte, n)
-
 	for i := 0; i < len(files); i++ {
-		fmt.Println("FOR=> " + files[i])
 
 		read_file = files[i]
-		read, err := ioutil.ReadFile(read_file)
+		buff := make([]byte, 512) // docs tell that it take only first 512 bytes into consideration
 
-		println(read)
+		f, err := os.Open(read_file)
 		if err != nil {
-			println(err)
+			fmt.Println("Could not open file")
 		}
+		f.Read(buff)
+
+		if http.DetectContentType(buff) != "image/png" {
+			fmt.Println(read_file + ": Failed! || Type: " + http.DetectContentType(buff))
+		}
+
+		if http.DetectContentType(buff) == "image/png" {
+			fmt.Println(read_file + ": Success! || Type: " + http.DetectContentType(buff))
+		}
+
 	}
 }
 
@@ -81,8 +76,7 @@ func IOReadDir(root string) ([]string, error) {
 	if err != nil {
 		return files, err
 	}
-
-	println(root + "\\")
+	println("Scanning...  " + root + "\\\n")
 	for _, file := range fileInfo {
 		c++
 		file_path := root + "\\" + file.Name()

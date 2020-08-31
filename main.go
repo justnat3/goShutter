@@ -2,24 +2,26 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
+	//	"encoding/hex"
 	"fmt"
+	//	"github.com/devedge/imagehash"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/devedge/imagehash"
 )
 
-var (
-	dir  string
-	file string
-)
+type hashed struct {
+	path string
+	hash string
+}
 
 func main() {
 
-	files, err := IOReadDir("C:/Users/Nathan Reed/Desktop")
+	files, err := IOReadDir("C:/Users/Nathan Reed/Desktop/")
 	if err != nil {
 		panic(err)
 	}
@@ -27,48 +29,58 @@ func main() {
 	fmt.Scanln("enter: ")
 }
 
-//IOReadFile : Take in files from IOREADDir function and read the bytes to check contentType
+//HashFiles : take array of files and hash them
 func HashFiles(files []string) {
 
-	var fileArr []string
+	// TODO:
+	// Store hashes array in memory.
+	// sha256 please
+
 	var readFile string
+	var hashes []hashed
+	const BlockSize = 64
 
 	for i := 0; i < len(files); i++ {
 
 		readFile = files[i]
-		buff := make([]byte, 512) // docs tell that it take only first 512 bytes into consideration
-
 		f, err := os.Open(readFile)
+		defer f.Close()
 
 		if err != nil {
 			log.Fatal("Could not open file")
 		}
+
+		buff := make([]byte, 512)
 		f.Read(buff)
 
 		switch {
-
 		case http.DetectContentType(buff) == "image/jpeg":
-			src, _ := imagehash.OpenImg(readFile)
-			hash, _ := imagehash.Dhash(src, 8)
-			//fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
-			object := readFile + "/" + hex.EncodeToString(hash)
-			fileArr = append(fileArr, object)
+
+			hasher := sha256.New()
+			if _, err := io.Copy(hasher, f); err != nil {
+				log.Fatal(err)
+			}
+			sum := hasher.Sum(nil)
+			h := hashed{path: readFile, hash: hex.EncodeToString(sum)}
+			hashes = append(hashes, h)
 			f.Close()
 		case http.DetectContentType(buff) == "image/png":
-			src, _ := imagehash.OpenImg(readFile)
-			//fmt.Println(readFile + ": Success! || Type: " + http.DetectContentType(buff))
-			hash, _ := imagehash.Dhash(src, 8)
-			object := readFile + "/" + hex.EncodeToString(hash)
+			hasher := sha256.New()
 
-			fileArr = append(fileArr, object)
+			if _, err := io.Copy(hasher, f); err != nil {
+				log.Fatal(err)
+			}
+			sum := hasher.Sum(nil)
+			h := hashed{path: readFile, hash: hex.EncodeToString(sum)}
+			hashes = append(hashes, h)
 			f.Close()
 		default:
 			f.Close()
 		}
 	}
 
-	for j := 0; j < len(fileArr); j++ {
-		fmt.Println(fileArr[j])
+	for j := 0; j < len(hashes); j++ {
+		fmt.Println(hashes[j])
 	}
 }
 
@@ -86,7 +98,7 @@ func IOReadDir(root string) ([]string, error) {
 	println("Scanning...  " + root + "/\n")
 	for _, file := range fileInfo {
 		c++
-		filePath := root + "\\" + file.Name()
+		filePath := root + file.Name()
 		files = append(files, filePath)
 	}
 	return files, nil

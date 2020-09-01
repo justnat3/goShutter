@@ -1,12 +1,15 @@
 //This is a main.go file. Treat it well. Treat it with kindness. Don't forget to struggle.
+
+//	WHAT IS THIS DOING:
+//	Takes a directory -> walks the directory you give it hashing only photo files -> sort and detect duplicates in the path.
+//	It then takes the duplicates and sticks them in a directory +1 from your root called dupes/ and you can delete or do whatever at this point.
+
 package main
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	//	"encoding/hex"
 	"fmt"
-	//	"github.com/devedge/imagehash"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,17 +17,18 @@ import (
 	"os"
 )
 
-type hashed struct {
+type hash struct {
 	path string
 	hash string
 }
 
 func main() {
+	files, err := IOReadDir("C:\\Users\\Nathan Reed\\Downloads\\afreightdata\\afreightdata" + "\\")
 
-	files, err := IOReadDir("C:/Users/Nathan Reed/Desktop/")
 	if err != nil {
 		panic(err)
 	}
+
 	HashFiles(files)
 	fmt.Scanln("enter: ")
 }
@@ -32,13 +36,11 @@ func main() {
 //HashFiles : take array of files and hash them
 func HashFiles(files []string) {
 
-	// TODO:
-	// Store hashes array in memory.
-	// sha256 please
-
 	var readFile string
-	var hashes []hashed
+	//var hashes []hash
 	const BlockSize = 64
+
+	m := make(map[string]string)
 
 	for i := 0; i < len(files); i++ {
 
@@ -55,14 +57,21 @@ func HashFiles(files []string) {
 
 		switch {
 		case http.DetectContentType(buff) == "image/jpeg":
-
 			hasher := sha256.New()
+
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
 			}
 			sum := hasher.Sum(nil)
-			h := hashed{path: readFile, hash: hex.EncodeToString(sum)}
-			hashes = append(hashes, h)
+
+			_, ok := m[hex.EncodeToString(sum)]
+			if ok == false {
+				println("False")
+			} else {
+				println("True")
+			}
+
+			m[hex.EncodeToString(sum)] = readFile
 			f.Close()
 		case http.DetectContentType(buff) == "image/png":
 			hasher := sha256.New()
@@ -70,17 +79,20 @@ func HashFiles(files []string) {
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
 			}
+
 			sum := hasher.Sum(nil)
-			h := hashed{path: readFile, hash: hex.EncodeToString(sum)}
-			hashes = append(hashes, h)
+
+			_, ok := m[hex.EncodeToString(sum)]
+			if ok == false {
+				println("False")
+			} else {
+				println("True")
+			}
+			m[hex.EncodeToString(sum)] = readFile
 			f.Close()
 		default:
 			f.Close()
 		}
-	}
-
-	for j := 0; j < len(hashes); j++ {
-		fmt.Println(hashes[j])
 	}
 }
 

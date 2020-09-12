@@ -42,12 +42,12 @@ func main() {
 func HashFiles(fileName []string, filePath []string, dupespath string) {
 	var readFile string
 	const BlockSize = 64
-	m := make(map[string]string)
+	var m = make(map[string]string)
 
 	for i := 0; i < len(filePath); i++ {
 		filePath := filePath[i]
 		fileName := fileName[i]
-		dupedFile := dupespath + fileName
+		//	dupedFile := dupespath + fileName
 		f, err := os.Open(filePath)
 		defer f.Close()
 
@@ -66,19 +66,24 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 			}
 			sum := hasher.Sum(nil)
 
-			_, ok := m[hex.EncodeToString(sum)]
-			if ok == false {
-				continue
-			} else if ok == true {
-				println("FILE MOVED")
-				err := os.Rename(filePath, dupedFile)
-				if err != nil {
-					log.Fatal(err)
-				}
+			val, ok := m[hex.EncodeToString(sum)]
+			f.Close()
+			if ok == true {
+				println(val)
+			} else {
+				println(val + "else")
 			}
+			// if ok == false {
+			// 	continue
+			// } else if ok == true {
+			// 	println("FILE MOVED")
+			// 	err := os.Rename(filePath, dupedFile)
+			// 	if err != nil {
+			// 		log.Fatal(err)
+			// 	}
+			// }
 
 			m[hex.EncodeToString(sum)] = readFile
-			f.Close()
 		case http.DetectContentType(buff) == "image/png":
 			hasher := sha256.New()
 			if _, err := io.Copy(hasher, f); err != nil {
@@ -87,20 +92,14 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 
 			sum := hasher.Sum(nil)
 
-			_, ok := m[hex.EncodeToString(sum)]
+			val, ok := m[hex.EncodeToString(sum)]
+			println(hex.EncodeToString(sum))
 			f.Close()
-			if ok == ok {
-				fmt.Println("ok")
-				continue
-			} else if ok == false {
-				fmt.Println("!ok")
-				//err := os.Rename(filePath, dupedFile)
-				//if err != nil {
-				//log.Fatal(err)
-				//}
-				//fmt.Printf("FILED MOVED: %s\n", fileName)
+			if ok {
+				println(val)
+			} else {
+				println(val + fileName)
 			}
-			m[hex.EncodeToString(sum)] = readFile
 		default:
 			f.Close()
 		}

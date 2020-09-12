@@ -22,49 +22,45 @@ type hash struct {
 	hash string
 }
 
+//type fileObject struct {
+//	filePath string
+//	fileName string
+//}
+
 func main() {
-	files, dupespath, err := IOReadDir("C:\\Users\\Nathan Reed\\Downloads\\afreightdata\\afreightdata" + "\\")
+	fileName, filePath, dupespath, err := IOReadDir("C:\\Users\\Nathan Reed\\Desktop\\")
 
 	if err != nil {
 		panic(err)
 	}
 
-	HashFiles(files, dupespath)
+	HashFiles(fileName, filePath, dupespath)
 	fmt.Scanln("enter: ")
 }
 
 //HashFiles : take array of files and hash them
-func HashFiles(files []string, dupespath string) {
-
-	//TODO:
-	// Grab File name and append it to the end of the dupe_fileName
-	// hashes are the key in the hash table
-	// mapping members will not take place if a member exists in the hashtable
-
+func HashFiles(fileName []string, filePath []string, dupespath string) {
 	var readFile string
 	const BlockSize = 64
-
 	m := make(map[string]string)
 
-	for i := 0; i < len(files); i++ {
-
-		readFile = files[i]
-		f, err := os.Open(readFile)
+	for i := 0; i < len(filePath); i++ {
+		filePath := filePath[i]
+		fileName := fileName[i]
+		dupedFile := dupespath + fileName
+		f, err := os.Open(filePath)
 		defer f.Close()
-		println(f.Name())
+
 		if err != nil {
 			log.Fatal("Could not open file")
 		}
 
 		buff := make([]byte, 512)
 		f.Read(buff)
-		newFile := dupespath + f.Name()
-		println(newFile)
-		println(dupespath)
+
 		switch {
 		case http.DetectContentType(buff) == "image/jpeg":
 			hasher := sha256.New()
-
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
 			}
@@ -74,14 +70,17 @@ func HashFiles(files []string, dupespath string) {
 			if ok == false {
 				continue
 			} else if ok == true {
-				CopyFile(readFile, newFile)
+				println("FILE MOVED")
+				err := os.Rename(filePath, dupedFile)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			m[hex.EncodeToString(sum)] = readFile
 			f.Close()
 		case http.DetectContentType(buff) == "image/png":
 			hasher := sha256.New()
-
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
 			}
@@ -89,15 +88,19 @@ func HashFiles(files []string, dupespath string) {
 			sum := hasher.Sum(nil)
 
 			_, ok := m[hex.EncodeToString(sum)]
-			if ok == false {
-				println("\nFalse\n")
-			} else {
-				CopyFile(readFile, newFile)
-				fmt.Printf("SOURCE =>" + readFile + "\n")
-				fmt.Printf("\nDEST =>" + newFile + "\n")
+			f.Close()
+			if ok == ok {
+				fmt.Println("ok")
+				continue
+			} else if ok == false {
+				fmt.Println("!ok")
+				//err := os.Rename(filePath, dupedFile)
+				//if err != nil {
+				//log.Fatal(err)
+				//}
+				//fmt.Printf("FILED MOVED: %s\n", fileName)
 			}
 			m[hex.EncodeToString(sum)] = readFile
-			f.Close()
 		default:
 			f.Close()
 		}
@@ -105,9 +108,13 @@ func HashFiles(files []string, dupespath string) {
 }
 
 //IOReadDir : Read in Directory and spit out file names + PATH
-func IOReadDir(root string) ([]string, string, error) {
+func IOReadDir(root string) ([]string, []string, string, error) {
 
-	var files []string
+	//	var fileObj fileObject
+	//	var fileObjects []fileObject
+	var fileNames []string
+	var filePaths []string
+
 	dupespath := root + "dupes\\"
 	if err, _ := os.Stat(dupespath); err == nil {
 		os.Mkdir(dupespath, os.FileMode(0522))
@@ -123,14 +130,20 @@ func IOReadDir(root string) ([]string, string, error) {
 		log.Fatal(err)
 	}
 
-	println("Scanning...  " + root + "/\n")
+	println("Scanning...  " + root + "\\\n")
 
 	for _, file := range fileInfo {
 		c++
+		fileName := file.Name()
 		filePath := root + file.Name()
-		files = append(files, filePath)
+
+		fileNames = append(fileNames, fileName)
+		filePaths = append(filePaths, filePath)
+
+		//fileObj = fileObject{filePath: root + file.Name(), fileName: file.Name()}
+		//fileObjects = append(fileObjects, fileObj)
 	}
-	return files, dupespath, nil
+	return fileNames, filePaths, dupespath, nil
 }
 
 func CopyFile(src, dst string) error {

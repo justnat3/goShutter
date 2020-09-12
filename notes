@@ -1,0 +1,7 @@
+#TODO:
++  Deconstruct FileObject and read in name and path 
++  optimize struct. This is to grab multiple values and to make sure its the same value type.
++  Match files & filepaths in the same variable or make file struct to hold file object for processing.
++  Optimize HashTable structure
++  Load testing 10,000 files
++  Start writing GUI

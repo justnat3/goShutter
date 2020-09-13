@@ -17,19 +17,13 @@ import (
 	"os"
 )
 
-type hash struct {
-	path string
-	hash string
-}
-
-//type fileObject struct {
-//	filePath string
-//	fileName string
-//}
+var (
+	table = make(map[string]string)
+)
 
 func main() {
-	fileName, filePath, dupespath, err := IOReadDir("C:\\Users\\Nathan Reed\\Desktop\\")
-
+	fileName, filePath, dupespath, progress, err := IOReadDir("C:\\Users\\Nathan Reed\\Downloads\\afreightdata\\afreightdata\\")
+	println(progress)
 	if err != nil {
 		panic(err)
 	}
@@ -40,13 +34,11 @@ func main() {
 
 //HashFiles : take array of files and hash them
 func HashFiles(fileName []string, filePath []string, dupespath string) {
-	var readFile string
 	const BlockSize = 64
-	var m = make(map[string]string)
 
 	for i := 0; i < len(filePath); i++ {
 		filePath := filePath[i]
-		fileName := fileName[i]
+		//fileName := fileName[i]
 		//	dupedFile := dupespath + fileName
 		f, err := os.Open(filePath)
 		defer f.Close()
@@ -58,6 +50,9 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 		buff := make([]byte, 512)
 		f.Read(buff)
 
+		//somehow creating hashes wrong. perhaps hash, add to map and then iterate through map to find
+		// duplicates
+
 		switch {
 		case http.DetectContentType(buff) == "image/jpeg":
 			hasher := sha256.New()
@@ -66,24 +61,17 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 			}
 			sum := hasher.Sum(nil)
 
-			val, ok := m[hex.EncodeToString(sum)]
-			f.Close()
+			key := hex.EncodeToString(sum)
+			val, ok := table[key]
+
 			if ok == true {
 				println(val)
 			} else {
-				println(val + "else")
+				println("not in table")
 			}
-			// if ok == false {
-			// 	continue
-			// } else if ok == true {
-			// 	println("FILE MOVED")
-			// 	err := os.Rename(filePath, dupedFile)
-			// 	if err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// }
 
-			m[hex.EncodeToString(sum)] = readFile
+			table[key] = filePath
+
 		case http.DetectContentType(buff) == "image/png":
 			hasher := sha256.New()
 			if _, err := io.Copy(hasher, f); err != nil {
@@ -92,14 +80,17 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 
 			sum := hasher.Sum(nil)
 
-			val, ok := m[hex.EncodeToString(sum)]
-			println(hex.EncodeToString(sum))
-			f.Close()
-			if ok {
+			key := hex.EncodeToString(sum)
+			val, ok := table[key]
+
+			if ok == true {
 				println(val)
 			} else {
-				println(val + fileName)
+				println("not in table")
 			}
+
+			table[key] = filePath
+			f.Close()
 		default:
 			f.Close()
 		}
@@ -107,7 +98,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string) {
 }
 
 //IOReadDir : Read in Directory and spit out file names + PATH
-func IOReadDir(root string) ([]string, []string, string, error) {
+func IOReadDir(root string) ([]string, []string, string, int, error) {
 
 	//	var fileObj fileObject
 	//	var fileObjects []fileObject
@@ -142,7 +133,8 @@ func IOReadDir(root string) ([]string, []string, string, error) {
 		//fileObj = fileObject{filePath: root + file.Name(), fileName: file.Name()}
 		//fileObjects = append(fileObjects, fileObj)
 	}
-	return fileNames, filePaths, dupespath, nil
+	progress := len(fileNames)
+	return fileNames, filePaths, dupespath, progress, nil
 }
 
 func CopyFile(src, dst string) error {

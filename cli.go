@@ -10,6 +10,7 @@ import (
 
 var dir string
 
+// Cli : add cli functionality to goDupe
 func Cli() string {
 	// wd : get working directory for help info section
 	wd, err := os.Getwd()

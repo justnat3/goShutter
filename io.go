@@ -27,7 +27,7 @@ func IOReadDir(root string) ([]string, []string, string, int, error) {
 
 	fileInfo, err := ioutil.ReadDir(root)
 	if err != nil {
-		fmt.Println("Could not open file\n")
+		log.Println("Could not open file")
 	}
 
 	fmt.Println("Scanning...  " + root + "\\\n")
@@ -47,7 +47,7 @@ func IOReadDir(root string) ([]string, []string, string, int, error) {
 
 }
 
-//	IOReadDupeFolder : read in what is in the dupesfolder
+// IOReadDupeFolder : read in what is in the dupesfolder
 func IOReadDupeFolder(dupespath string) (int, error) {
 	var fileNames []string
 	var c int = 0

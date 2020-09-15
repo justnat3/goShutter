@@ -12,9 +12,7 @@ import (
 	"time"
 )
 
-var (
-	table = make(map[string]string)
-)
+var table = make(map[string]string)
 
 //HashFiles : take array of files and hash them
 func HashFiles(fileName []string, filePath []string, dupespath string, progress int) []string {
@@ -25,9 +23,9 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 	//	5. 	if the check returns that it is not in the table we add that key to a location
 	//	6.	if the check returns there was a match we put the file in the dupespath
 
+	var logs []string
 	progressTotal := progress
 	start := time.Now()
-	var logs []string
 
 	for i := 0; i < len(filePath); i++ {
 		progress = progress - 1
@@ -38,6 +36,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 		fileName := fileName[i]
 		dupedFile := dupespath + fileName
 		f, err := os.Open(filePath)
+		buff := make([]byte, 512)
 
 		if err != nil {
 			log.Fatal(err)
@@ -45,21 +44,18 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 		}
 		defer f.Close()
 
-		buff := make([]byte, 512)
 		f.Read(buff)
 
 		switch {
-
 		case http.DetectContentType(buff) == "image/jpeg":
 
 			hasher := sha256.New()
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
 			}
-
-			sum := hasher.Sum(nil)
 			f.Close()
 
+			sum := hasher.Sum(nil)
 			key := hex.EncodeToString(sum)
 			_, ok := table[key]
 
@@ -80,8 +76,8 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 			}
 
 			f.Close()
-			sum := hasher.Sum(nil)
 
+			sum := hasher.Sum(nil)
 			key := hex.EncodeToString(sum)
 			_, ok := table[key]
 

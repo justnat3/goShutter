@@ -40,6 +40,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 		f, err := os.Open(filePath)
 
 		if err != nil {
+			log.Fatal(err)
 			logs = append(logs, fileName)
 		}
 		defer f.Close()

@@ -5,22 +5,20 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 //IOReadDir : Read in Directory and spit out file names + PATH
 func IOReadDir(root string) ([]string, []string, string, int) {
-
 	var fileNames []string
 	var filePaths []string
 	var dupespath string
 	var c int = 0
 
 	// Clean Root Path
-	root = filepath.Clean(root)
+	//root = filepath.Clean(root)
 
 	//Decide on OS to permit
-	dupespath = root + "\\" + "dupes\\"
+	dupespath = root + "dupes\\"
 	fmt.Printf("Path to Dupes: %s\n", dupespath)
 
 	// if dupes path does not exist -> create it
@@ -37,7 +35,7 @@ func IOReadDir(root string) ([]string, []string, string, int) {
 		log.Println("Could not open file")
 	}
 
-	fmt.Println("Scanning...  " + root + "\\\n")
+	fmt.Println("Scanning...  " + root + "\n")
 
 	for _, file := range fileInfo {
 		c++

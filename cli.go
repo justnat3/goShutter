@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
+	"strings"
 
 	"github.com/thatisuday/commando"
 )
@@ -38,7 +38,6 @@ func Cli() (string, bool) {
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 			dir = args["dir"].Value
 			debugging, _ = flags["debug"].GetBool()
-
 		})
 
 	commando.Parse(nil)
@@ -63,10 +62,9 @@ func Cli() (string, bool) {
 	}
 
 	//Clean path of double quotes
-	if filepath.VolumeName(dir) == "C:" {
-		dir = dir[0:len(dir)-1] + "\\"
-		return dir, debugging
-	} else {
-		return dir, debugging
+	if strings.Contains(dir, `"`) {
+		dir = strings.Replace(dir, `"`, "", -1)
 	}
+	dir = dir + "\\"
+	return dir, debugging
 }

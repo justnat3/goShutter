@@ -6,22 +6,27 @@ import (
 )
 
 func main() {
-	dir := Cli()
+	dir, debugging := Cli()
 	// Read IOReadDir Comment
-	fileName, filePath, dupespath, progress, err := IOReadDir(dir)
-
+	fileName, filePath, dupespath, progress := IOReadDir(dir)
 	//Get Items already in dupes folder. If Dupes does not exist we can create it.
-	itemsInDupes, err := IOReadDupeFolder(dupespath)
-	if err != nil {
-		panic(err)
-	}
+	itemsInDupes := IOReadDupeFolder(dupespath)
 
 	// Read Hashing Comment
-	HashFiles(fileName, filePath, dupespath, progress)
+	logs := HashFiles(fileName, filePath, dupespath, progress)
+	itemsCaught := IOReadDupeFolder(dupespath)
+
+	if debugging {
+		fmt.Printf("-------------------------------------------------------------------------------------\n")
+		for i := 0; i < len(logs); i++ {
+			fmt.Printf("Failed to open: %s\n", logs[i])
+		}
+		fmt.Printf("-------------------------------------------------------------------------------------\n")
+	}
 
 	//We can assume that the items-caught were not already in the dupes folder so -> substract the total
-	itemsCaught, err := IOReadDupeFolder(dupespath)
-	fmt.Printf("Items Caught: %s", strconv.Itoa(itemsCaught-itemsInDupes))
+	fmt.Printf("Path to Dupes: %s\n", dupespath)
+	fmt.Printf("Items Caught: %s\n", strconv.Itoa(itemsCaught-itemsInDupes))
 
 	// Do not escape if run from exe
 	fmt.Scanln("enter: ")

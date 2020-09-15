@@ -17,7 +17,7 @@ var (
 )
 
 //HashFiles : take array of files and hash them
-func HashFiles(fileName []string, filePath []string, dupespath string, progress int) {
+func HashFiles(fileName []string, filePath []string, dupespath string, progress int) []string {
 	// 	1.	Iterate through the files that were read in -> during the ReadDir Phase
 	//	2.	Read in the first 512bytes of the file to grab magic bytes
 	//	3.	Read into the net/http library to detect the files MimeType
@@ -27,6 +27,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 
 	progressTotal := progress
 	start := time.Now()
+	var logs []string
 
 	for i := 0; i < len(filePath); i++ {
 		progress = progress - 1
@@ -39,7 +40,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 		f, err := os.Open(filePath)
 
 		if err != nil {
-			fmt.Println("Error in loop")
+			logs = append(logs, fileName)
 		}
 		defer f.Close()
 
@@ -96,8 +97,7 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 			f.Close()
 		}
 	}
-
 	duration := time.Since(start)
 	fmt.Printf("\n\nExecution time: %s\n\n", duration)
-
+	return logs
 }

@@ -4,14 +4,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/thatisuday/commando"
 )
 
-var dir string
+var (
+	dir       string
+	debugging bool
+)
 
 // Cli : add cli functionality to goDupe
-func Cli() string {
+func Cli() (string, bool) {
+
 	// wd : get working directory for help info section
 	wd, err := os.Getwd()
 	if err != nil {
@@ -27,11 +32,13 @@ func Cli() string {
 		SetDescription(WelcomeStr)
 
 	commando.
-		Register("dir").
+		Register(nil).
 		AddArgument("dir", "Path to desired directory", "").
-		SetShortDescription("path to Desired Directory").
+		AddFlag("debug,l", "Get Debug Of Program", commando.Bool, nil).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 			dir = args["dir"].Value
+			debugging, _ = flags["debug"].GetBool()
+
 		})
 
 	commando.Parse(nil)
@@ -55,6 +62,11 @@ func Cli() string {
 		log.Println(td)
 	}
 
-	return dir
-
+	//Clean path of double quotes
+	if filepath.VolumeName(dir) == "C:" {
+		dir = dir[0:len(dir)-1] + "\\"
+		return dir, debugging
+	} else {
+		return dir, debugging
+	}
 }

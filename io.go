@@ -5,24 +5,31 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 //IOReadDir : Read in Directory and spit out file names + PATH
-func IOReadDir(root string) ([]string, []string, string, int, error) {
+func IOReadDir(root string) ([]string, []string, string, int) {
 
 	var fileNames []string
 	var filePaths []string
+	var dupespath string
 	var c int = 0
 
+	// Clean Root Path
+	root = filepath.Clean(root)
+
+	//Decide on OS to permit
+	dupespath = root + "\\" + "dupes\\"
+	fmt.Printf("Path to Dupes: %s\n", dupespath)
+
 	// if dupes path does not exist -> create it
-	dupespath := root + "dupes\\"
 	if err, _ := os.Stat(dupespath); err == nil {
 		err := os.Mkdir(dupespath, os.FileMode(0522))
 		if err != nil {
+			fmt.Printf("\nNOTICE:\nConsider adding a \\ or / to the end to complete the path.\n\n")
 			log.Fatal(err)
 		}
-	} else {
-		log.Println("\n DupesDir: Already Exists")
 	}
 
 	fileInfo, err := ioutil.ReadDir(root)
@@ -43,12 +50,12 @@ func IOReadDir(root string) ([]string, []string, string, int, error) {
 	}
 
 	progress := len(fileNames)
-	return fileNames, filePaths, dupespath, progress, nil
+	return fileNames, filePaths, dupespath, progress
 
 }
 
 // IOReadDupeFolder : read in what is in the dupesfolder
-func IOReadDupeFolder(dupespath string) (int, error) {
+func IOReadDupeFolder(dupespath string) int {
 	var fileNames []string
 	var c int = 0
 
@@ -65,6 +72,5 @@ func IOReadDupeFolder(dupespath string) (int, error) {
 	}
 
 	itemsCaught := len(fileNames)
-	return itemsCaught, nil
-
+	return itemsCaught
 }

@@ -19,5 +19,10 @@ Rebase your local changes against the master branch
 Run gofmt -s
 Create a new Pull Request
 
+## Dependencies
+go 1.15
+github.com/thatisuday/commando v1.0.4
+#### Working on no dependencies
+
 ## Current Record:
 16494 files -> 2-min :: 39-sec

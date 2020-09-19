@@ -57,6 +57,7 @@ func Cli() (string, bool) {
 	// if this dir is not valid we can exit and alert the user
 	td, err := os.Stat(dir)
 	if os.IsNotExist(err) {
+		println(dir)
 		log.Fatal("Folder does not exist.")
 		log.Println(td)
 	}
@@ -64,6 +65,10 @@ func Cli() (string, bool) {
 	//Clean path of double quotes
 	if strings.Contains(dir, `"`) {
 		dir = strings.Replace(dir, `"`, "", -1)
+	} else if strings.Contains(dir, `'`) {
+		dir = strings.Replace(dir, `'`, "", -1)
+	} else {
+		println(dir)
 	}
 	dir = dir + "\\"
 	return dir, debugging

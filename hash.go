@@ -43,12 +43,9 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 			logs = append(logs, fileName)
 		}
 		defer f.Close()
-
 		f.Read(buff)
 
-		switch {
-		case http.DetectContentType(buff) == "image/jpeg":
-
+		if http.DetectContentType(buff) == "image/jpeg" || http.DetectContentType(buff) == "image/png" {
 			hasher := sha256.New()
 			if _, err := io.Copy(hasher, f); err != nil {
 				log.Fatal(err)
@@ -59,41 +56,16 @@ func HashFiles(fileName []string, filePath []string, dupespath string, progress 
 			key := hex.EncodeToString(sum)
 			_, ok := table[key]
 
-			if ok == true {
+			if ok {
 				err := os.Rename(filePath, dupedFile)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
-
 			table[key] = filePath
-
-		case http.DetectContentType(buff) == "image/png":
-
-			hasher := sha256.New()
-			if _, err := io.Copy(hasher, f); err != nil {
-				log.Fatal(err)
-			}
-
-			f.Close()
-
-			sum := hasher.Sum(nil)
-			key := hex.EncodeToString(sum)
-			_, ok := table[key]
-
-			if ok == true {
-				err := os.Rename(filePath, dupedFile)
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-
-			table[key] = filePath
-
-		default:
-			f.Close()
 		}
 	}
+
 	duration := time.Since(start)
 	fmt.Printf("\n\nExecution time: %s\n\n", duration)
 	return logs

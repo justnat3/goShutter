@@ -1,4 +1,4 @@
-module github/justnat3/goDupe
+module github/justnat3/goShutter
 
 go 1.15
 
